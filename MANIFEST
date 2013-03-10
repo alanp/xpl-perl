@@ -44,6 +44,7 @@ bin/xpl-w800
 bin/xpl-wol
 bin/xpl-xosd
 bin/xpl-xvkbd
+bin/xpl-smstool3
 Changes
 debian/changelog
 debian/compat
@@ -190,6 +191,7 @@ lib/xPL/Dock/W800.pm
 lib/xPL/Dock/WOL.pm
 lib/xPL/Dock/XOSD.pm
 lib/xPL/Dock/Xvkbd.pm
+lib/xPL/Dock/smstool3.pm
 lib/xPL/Gtk2Client.pm
 lib/xPL/Hub.pm
 lib/xPL/IOHandler.pm
