@@ -1,5 +1,8 @@
 #!/usr/bin/perl -w
 
+eval 'exec /usr/bin/perl -w -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1 NAME
 
 xpl-rrd-graphs - Perl script for producing graphs from xpl-rrd directory.
@@ -21,6 +24,8 @@ in RRD database files.
 
 use 5.006;
 use strict;
+use warnings;
+use IO::File;
 use File::Find;
 use File::Path qw/mkpath/;
 use POSIX qw/strftime/;
@@ -28,8 +33,8 @@ use RRDs;
 
 $|=1;
 
-my $data_dir = shift || "/var/lib/rrd";
-my $graph_dir = shift || "/var/www/rrd";
+my $data_dir = shift || "/var/xpl/rrd";
+my $graph_dir = shift || "/var/www/localhost/htdocs";
 my $todo;
 if (@ARGV) {
   %$todo = map { $_ => 1 } @ARGV;
@@ -59,12 +64,12 @@ my $time = time;
 my @graph =
   (
    {
-    span => '1h',
-    name => "1 Hour",
+    span => '2h',
+    name => "2 Hours",
    },
    {
-    span => '6h',
-    name => "6 Hours",
+    span => '12h',
+    name => "12 Hours",
    },
    {
     span => '1d',
@@ -86,18 +91,18 @@ my @graph =
     span => '3mon',
     name => "3 Months",
    },
-   {
-    span => '6mon',
-    name => "6 Months",
-   },
-   {
-    span => '1y',
-    name => "1 Year",
-   },
-   {
-    span => '2y',
-    name => "2 Year",
-   },
+#   {
+#    span => '6mon',
+#    name => "6 Months",
+#   },
+#   {
+#    span => '1y',
+#    name => "1 Year",
+#   },
+#   {
+#    span => '2y',
+#    name => "2 Year",
+#   },
   );
 
 foreach my $dir (sort keys %rrds) {
@@ -119,10 +124,20 @@ foreach my $dir (sort keys %rrds) {
         my $index = $gb."/$var.html";
         open my $fh, '>', $index or die "Failed to open $index: $!\n";
         my $title = 'for '.$var.' from '.$dir.'/'.$a;
-        $fh->print("<html><head><title>Graphs $title</title></head><body>\n");
-        $fh->print("<h1>Graphs $title</h1>");
-        $fh->printf("<p>Generated at %s.</p>\n",
-                    strftime("%Y-%m-%d %H:%M", localtime(time)));
+#        $fh->print("<html><head><title>Graphs $title</title></head><body>\n");
+#        $fh->print("<h1>Graphs $title</h1>");
+	$fh->print("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
+	$fh->print("<html><head><title>The Home Control Machine</title><link REL=\"STYLESHEET\" TYPE=\"text/css\" HREF=\"../../style.css\" Title=\"BlueSky 3.0 CSS\"></head>");
+	$fh->print("<body><div class=\"nifty\"><b class=\"rtop\"><b class=\"r1\"></b><b class=\"r2\"></b><b class=\"r3\"></b><b class=\"r4\"></b></b>");
+	$fh->print("<div class=\"nifty2\"><b class=\"rtop2\"><b class=\"r12\"></b><b class=\"r22\"></b><b class=\"r32\"></b><b class=\"r42\"></b></b>");
+	$fh->print("<h1><span class=\"gray\">The&nbsp</span>Home Control<span class=\"gray\">&nbspMachine</span></h1><h2 id=\"slogan\">Look here to see what's happening</h2><br>");
+	$fh->print("<div  id=\"menu\"><ul>");
+	$fh->print("<li><a href=\"#\">Home</a></li>");
+	$fh->print("<li><a href=\"/gpsdo.html\">GPSDO</a></li>");
+	$fh->print("<li><a href=\"/ntp.html\">NTP</a></li>");
+	$fh->print("<li><a href=\"/temp.html\">Temperature</a></li>");
+	$fh->print("<li><a href=\"/hardware.html\">Hardware</a></li></ul></div>");
+        $fh->printf("<p>&nbsp</p><p>Generated at %s.</p>\n",strftime("%Y-%m-%d %H:%M", localtime(time)));
         foreach my $rec (@graph) {
           my $span = $rec->{span};
           my $name = $rec->{name};
@@ -136,7 +151,7 @@ foreach my $dir (sort keys %rrds) {
             RRDs::graph("$gb/$file",
                         "--title" => "Graph $title ($name)",
                         "--start" => $start, "--end"   => $end,
-                        "--width" => 600,  "--height" => 200,
+                        "--width" => 800,  "--height" => 200,
                         "--imgformat" => "PNG", "--interlaced", '--lazy',
                         "DEF:avg=$rrd:$var:AVERAGE", "DEF:min=$rrd:$var:MIN",
                         "DEF:max=$rrd:$var:MAX",
@@ -155,10 +170,12 @@ foreach my $dir (sort keys %rrds) {
               next;
             }
           }
-          $fh->print("<h2>$name</h2>\n");
+          $fh->print("<h3>$name</h3>\n");
           $fh->print("<img src=\"$file\" />\n");
         }
-        $fh->print("</body></html>\n");
+#        $fh->print("</body></html>\n");
+	$fh->print("<center><div class=\"footer\">&copy; <a href=\"#\">Alan Page</a> 2013 | Valid CSS</a></div></center></div></div></body></html>");
+
         close $fh;
       }
       if ((scalar @$sources) == 1) {
