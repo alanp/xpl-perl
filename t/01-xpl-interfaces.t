@@ -211,5 +211,5 @@ is(test_error(sub { $xpl = xPL::Listener->new(interface => 'eth0') }),
 
 # finally unset HARNESS_ACTIVE to check that find_in_path also checks /sbin
 delete $ENV{TEST_HARNESS_OVERRIDE};
-is($xpl->find_in_path("route"), '/sbin/route',
+is($xpl->find_in_path("fdisk"), '/sbin/fdisk',
    'find_in_path checks /sbin');
